@@ -7,7 +7,7 @@ COPY bundles-src bundles-src
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 
-RUN npm ci --dev
+RUN npm ci --also=dev
 
 COPY . .
 EXPOSE 3000
