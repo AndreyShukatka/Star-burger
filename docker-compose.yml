@@ -7,7 +7,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     env_file:
-      - .env
+      - backend/.env
     environment:
       POSTGRES_DB: mydb
     ports:
@@ -26,16 +26,22 @@ services:
   backend:
     build: backend
     container_name: backend
-    command: python3 manage.py runserver 0.0.0.0:8000
+    command: >
+        /bin/sh -c "python3 manage.py makemigrations --force-color --no-input -v 3
+        && python3 manage.py migrate --force-color -v 3
+        && python3 manage.py collectstatic --noinput
+        && python3 -m gunicorn -b 0.0.0.0:8000 star_burger.wsgi --reload"
     ports:
       - "8000:8000"
     volumes:
+      - bundles_volume:/backend/bundles
       - ./backend/media:/backend/media
       - static_volume:/backend/static
     env_file:
-      - .env
+      - backend/.env
     depends_on:
       - db
+      - frontend
 
   nginx:
     image: nginx
@@ -54,3 +60,4 @@ services:
 volumes:
   db_data:
   static_volume:
+  bundles_volume:
