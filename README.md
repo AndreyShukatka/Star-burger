@@ -168,7 +168,7 @@ GRANT ALL PRIVILEGES ON DATABASE <имя базы данных> TO <имя по�
 ```shell
 cd ..
 cd opt
-git clone https://github.com/Sergryap/star-burger.git
+git clone https://github.com/AndreyShukatka/star-burger.git
 ```
 #### Перейдите в каталог проекта:
 
