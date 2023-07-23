@@ -1,6 +1,6 @@
 # #!/bin/bash
+cd ..
 set -Eeuo pipefail
-git pull
 git pull
 docker compose up -d
 curl \
