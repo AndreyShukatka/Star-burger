@@ -16,7 +16,80 @@
 
 Третий интерфейс — это админка. Преимущественно им пользуются программисты при разработке сайта. Также сюда заходит менеджер, чтобы обновить меню ресторанов Star Burger.
 
-## Как запустить dev-версию сайта
+## как запустить dev-версию через Docker
+- Скачать репозиторий проекта:
+```shell
+git clone https://github.com/AndreyShukatka/star-burger.git
+```
+- Установите Докер, инструкция по [ссылке](https://docs.docker.com/desktop/install/linux-install/)
+- Поместите заполненный файл `.env` в директорию `backend`
+- Запустите из основной папки команду
+```Shell
+docker-compose up
+```
+
+###### Создайте файл `starburger.service` в каталоге `/etc/systemd/system` следующего содержания:
+```markdown
+[Unit]
+Description=Star-Burger
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/star-burger
+ExecStart=docker-compose up
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+#### Настройте автоматическое обновление сертификатов
+###### Создайте файл `certbot-renewal.service` в каталоге `/etc/systemd/system`:
+```markdown
+[Unit]
+Description=Certbot Renewal
+
+[Service]
+ExecStart=/snap/bin/certbot renew --force-renewal --post-hook "systemctl reload nginx.service"
+```
+###### Создайте файл `certbot-renewal.timer` в каталоге `/etc/systemd/system`:
+```markdown
+# Файл /etc/systemd/system/certbot-renewal.timer
+[Unit]
+Description=Timer for Certbot Renewal
+
+[Timer]
+OnBootSec=600000
+OnUnitActiveSec=1w
+
+[Install]
+WantedBy=multi-user.target
+```
+#### Настройте автоматическую очистку сессий пользователей
+###### Создайте файл `clearsessions.service` в каталоге `/etc/systemd/system`:
+```markdown
+[Service]
+WorkingDirectory=/opt/star-burger
+ExecStart=python3 manage.py clearsessions
+Restart=on-failure
+RestartSec=86400s
+
+[Install]
+WantedBy=multi-user.target
+```
+###### Создайте файл `clearsessions.timer` в каталоге `/etc/systemd/system`:
+```markdown
+[Unit]
+Description=Очистить сессию
+
+[Timer]
+OnBootSec=86400
+OnUnitActiveSec=1w
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## Как запустить dev-версию сайта без Docker
 
 Для запуска сайта нужно запустить **одновременно** бэкенд и фронтенд, в двух терминалах.
 
@@ -345,7 +418,7 @@ http://<HOST вашего сервера>
 ```
 ## Как быстро применить изменения из репозитория для вашего сайта
 
-Для того чтобы изменения в вашем репозитории быстро отобразились на сайте выполните команду, находясь в корневом каталоге проекта:
+Для того чтобы изменения в вашем репозитории быстро отобразились на сайте выполните команду, находясь в папке `prod`:
 
 ```sh
 ./deploy_star_burger.sh
@@ -353,9 +426,4 @@ http://<HOST вашего сервера>
 x
 ## Цели проекта
 
-Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
-
-Где используется репозиторий:
-
-- Второй и третий урок [учебного курса Django](https://dvmn.org/modules/django/)
-
+Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org)
